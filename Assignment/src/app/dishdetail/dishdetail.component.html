@@ -22,13 +22,18 @@
       </mat-card-header>
       <img mat-card-image src={{dish.image}} alt={{dish.name}}>
       <mat-card-content>
-        <p>{{dish.description}}
+        <p>{{dish.description}} 
         </p>
       </mat-card-content>
       <mat-card-actions>
+        <button mat-button [routerLink]="['/dishdetail', prev]"><span class="fa fa-chevron-left fa-lg"></span></button>
+      
         <button mat-button (click)="goBack()">BACK</button>
         <button mat-button>LIKE</button>
         <button mat-button>SHARE</button>
+        
+        <span class="flex-spacer"></span>
+        <button mat-button [routerLink]="['/dishdetail', next]"><span class="fa fa-chevron-right fa-lg"></span></button>
       </mat-card-actions>
     </mat-card>
   </div>
@@ -41,22 +46,82 @@
             <mat-card-title>
               <h3>Comments</h3>
             </mat-card-title>
-          </mat-card-header>
+        </mat-card-header>
 
         <mat-grid-list [cols]="1" rowHeight="50px">
           <mat-grid-tile *ngFor="let com of dish.Comments">
-            
             <mat-grid-tile-footer>
-                <h1>{{com.comment}}</h1><br>
-                <h1>{{com.rating}} Stars</h1><br>
-              
-              <h1>{{com.date}}</h1>
-              
-              
+              <h1>{{com.comment}}</h1><br>
+              <h1>{{com.rating}} Stars</h1><br>
+              <h1>{{com.date}}</h1> 
             </mat-grid-tile-footer>
-          </mat-grid-tile>
+          </mat-grid-tile>      
         </mat-grid-list>
+
+        <div >  
+          <mat-grid-tile-footer class="dhia">
+          <h3  *ngIf="form.invalid">{{ comment }} sdf</h3>
+          <p *ngIf="form.invalid">{{ rating }} </p>
+          <p *ngIf="form.invalid">{{author}}</p>
+          </mat-grid-tile-footer>
+        </div>
+
+ <h1>  
+    <div >
+  <p *ngIf="form.invalid">test {{author}}</p>
+</div>
+</h1><br>
+
+
+
+        <form novalidate [formGroup]="commentForm" #form="ngForm" (ngSubmit)="onSubmit()">
+          <p>
+            <mat-form-field class="half-width">
+              <input  matInput formControlName="author" placeholder="Name" type="text" >
+              <mat-error *ngIf="formErrors.author">
+                {{formErrors.author}}
+              </mat-error>
+            </mat-form-field>
+          </p>
+      
+
+          <div class="example-label-container" [class]="vertical ? 'example-label-vertical' : 'example-label-horizontal'">
+            
+            <label class="example-value-label">{{star}}</label>
+          </div>
+          <mat-slider
+          class="example-margin"
+          [disabled]="disabled"
+          [invert]="invert"
+          [max]="max"
+          [min]="min"
+          [step]="step"
+          [thumbLabel]="thumbLabel"
+          [displayWith]="formatLabel"
+          
+          [vertical]="vertical"
+          (input)="changeValue($event)"
+          formControlName="rating" 
+          aria-labelledby="example-name-label">
+      </mat-slider>
+      
+          <p>
+            <mat-form-field class="full-width">
+              <textarea matInput formControlName="comment" placeholder="Your Comment" rows=12 ></textarea>
+            </mat-form-field>
+          </p>
+          <button type="submit" mat-button class="background-primary text-floral-white"
+                  [disabled]="commentForm.invalid">Submit</button>
+      
+        </form>
+
+
+        <div [hidden]="dish.image">
+          <mat-spinner></mat-spinner><h4>Loading . . . Please Wait</h4>
+        </div>
+
       </div>
+ 
   </div>
 
 
