@@ -9,5 +9,5 @@ export interface Dish{
     label : string ; 
     price : string ; 
     description : string ;
-    Comments : Comment[];
+    comments : Comment[];
 }

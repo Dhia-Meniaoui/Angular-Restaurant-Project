@@ -1,18 +1,36 @@
 import { FormBuilder, FormGroup, Validators , FormGroupDirective } from '@angular/forms';
 import { Component, OnInit, ViewChild , ElementRef} from '@angular/core';
 import { Feedback, ContactType } from '../shared/feedback';
+import { FeedbackService } from '../services/feedback.service';
+import { visibility, flyInOut , visibilityform} from '../animation/app.animation';
+import { Params, ActivatedRoute } from '@angular/router';
+import { switchMap } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-contact',
   templateUrl: './contact.component.html',
-  styleUrls: ['./contact.component.scss']
+  styleUrls: ['./contact.component.scss'],
+  host: {
+    '[@flyInOut]': 'true',
+    'style': 'display: block;'
+    },
+    animations: [
+      visibility(),
+      flyInOut(),
+      visibilityform()
+    ]
 })
 export class ContactComponent implements OnInit { 
   @ViewChild('fform') feedbackFormDirective! : FormGroupDirective;
   feedbackForm!: FormGroup;
-  feedback!: Feedback ;
+  feedback!: Feedback|any ;
   contactType = ContactType;
-  
+  visibility='hidden';
+  visibilityform= 'hidden';
+  feedbackcopy!: Feedback|any ;
+
+
  formErrors = {
   'firstname': '',
   'lastname': '',
@@ -42,17 +60,37 @@ validationMessages = {
 };
 
 
-  constructor(private fb: FormBuilder) {
+  constructor(private FeedbackService: FeedbackService,private fb: FormBuilder,private route: ActivatedRoute) {
     this.createForm();
    }
 
   ngOnInit(): void {
     this.feedbackForm.reset({title: 'new value'});
+
+    this.route.params
+    .pipe(switchMap((params: Params) => {this.visibility ='shown'; this.visibilityform ='hidden';return this.FeedbackService.getfeedback(params['id']);}))
+    .subscribe(feedback => { this.feedback = feedback; this.feedbackcopy=feedback; this.visibility='shown'; this.visibilityform ='hidden'; });
   }
 
 
-
-
+  get firstname() {
+    return (this.feedbackForm.get('firstname')?.value);
+  }
+  get lastname() {
+    return (this.feedbackForm.get('lastname')?.value);
+  }
+  get telnum(){
+    return (this.feedbackForm.get('telnum')?.value);
+  }
+  get email() {
+    return (this.feedbackForm.get('email')?.value);
+  }
+  get agree(){
+    return (this.feedbackForm.get('agree')?.value);
+  }
+  get message(){
+    return (this.feedbackForm.get('message')?.value);
+  }
 
 
   createForm() {
@@ -76,8 +114,26 @@ validationMessages = {
 
 
   onSubmit() {
-    this.feedback = this.feedbackForm.value;
-    console.log(this.feedback);
+    this.feedback =this.feedbackForm.value;
+
+    this.FeedbackService.postfeedback(this.feedback)
+      .subscribe(feedback => {
+        this.feedback = feedback ;
+        this.feedbackcopy=feedback; 
+        this.visibilityform ='shown';
+        this.visibility='hidden';
+        
+        console.log(this.feedback);
+      },
+      errmis => {
+        this.feedback = null 
+      });
+    this.feedbackFormDirective.resetForm();
+
+
+
+/*     this.feedback = this.feedbackForm.value;
+    console.log(this.feedback); */
     this.feedbackForm.reset({
       firstname: '',
       lastname: '',

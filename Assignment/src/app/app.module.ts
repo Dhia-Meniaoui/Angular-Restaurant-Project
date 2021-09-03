@@ -17,6 +17,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DishService } from './services/dish.service';
+import { LeaderService } from './services/leader.service';
+import { PromotionService } from './services/promotion.service';
 import 'hammerjs';
 import { MenuComponent } from './menu/menu.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,7 +26,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms'; 
 import {MatSliderModule} from "@angular/material/slider";
-
+import { HttpClientModule } from '@angular/common/http';
 
 
 
@@ -38,7 +40,9 @@ import { AboutComponent } from './about/about.component';
 import { HomeComponent } from './home/home.component';
 import { ContactComponent } from './contact/contact.component';
 import { LoginComponent } from './login/login.component';
-
+import { HighlightDirective } from './directives/highlight.directive';
+import { baseURL } from './shared/baseurl';
+import { ProcessHTTPMsgService } from './services/process-httpmsg.service';
 
 
 @NgModule({
@@ -51,7 +55,8 @@ import { LoginComponent } from './login/login.component';
     AboutComponent,
     HomeComponent,
     ContactComponent,
-    LoginComponent
+    LoginComponent,
+    HighlightDirective
   ],
   imports: [
     BrowserModule,
@@ -59,6 +64,7 @@ import { LoginComponent } from './login/login.component';
     BrowserAnimationsModule,
     MatToolbarModule,
     FlexLayoutModule,
+    HttpClientModule,
     MatListModule,
     MatCardModule,
     MatGridListModule,
@@ -77,7 +83,13 @@ import { LoginComponent } from './login/login.component';
   entryComponents: [
     LoginComponent
 ],
-  providers: [DishService],
+  providers: [
+    DishService,
+    PromotionService,
+    LeaderService, 
+    ProcessHTTPMsgService,
+    {provide: 'BaseURL', useValue: baseURL}
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,17 +1,27 @@
 import { FormBuilder, FormGroup, Validators , FormGroupDirective } from '@angular/forms';
-import { Component, OnInit, ViewChild , ElementRef , Input} from '@angular/core';
+import { Component, OnInit, ViewChild  , Input , Inject} from '@angular/core';
 import {Dish} from '../shared/dish';
 import {Comment} from '../shared/Comment';
-import { DISHES } from '../shared/diches';
 import { switchMap } from 'rxjs/operators';
 import { DishService } from '../services/dish.service';
 import { Params, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
+import { visibility, flyInOut ,expand } from '../animation/app.animation';
+
 
 @Component({
   selector: 'app-dishdetail',
   templateUrl: './dishdetail.component.html',
-  styleUrls: ['./dishdetail.component.scss']
+  styleUrls: ['./dishdetail.component.scss'],
+  host: {
+    '[@flyInOut]': 'true',
+    'style': 'display: block;'
+    },
+  animations: [
+    visibility(),
+    flyInOut(),
+    expand()
+  ]
 })
 
 
@@ -25,8 +35,8 @@ export class DishdetailComponent implements OnInit {
   commentForm!: FormGroup;
   comment!: Comment ;
     @Input()
-  dish :  Dish  = DISHES[3];
-  dishIds!: string[] ;
+  dish! :  Dish | any ;
+  dishIds!: string ;
   prev!: string;
   next!: string;
   dishcopy : Dish | any;
@@ -68,7 +78,8 @@ export class DishdetailComponent implements OnInit {
   constructor(private dishservice: DishService,
     private route: ActivatedRoute,
     private location: Location,
-    private fb: FormBuilder) {
+    private fb: FormBuilder,
+    @Inject('BaseURL') public BaseURL : String) {
       this.createForm();
      }
 
@@ -87,22 +98,32 @@ export class DishdetailComponent implements OnInit {
 
 
     ngOnInit() {
+      this.createForm();
+
       this.dishservice.getDishIds()
       .subscribe(dishIds => this.dishIds = dishIds);
+      
     this.route.params
       .pipe(switchMap((params: Params) => {this.visibility ='hidden';return this.dishservice.getDish(params['id']);}))
       .subscribe(dish => { this.dish = dish; this.dishcopy=dish; this.setPrevNext(dish.id);this.visibility='shown'; },
         errmess=>this.errMess=<any> errmess);
+ 
+
+setTimeout(() => {
+  console.log(this.dish);
+}, 3000);
+
+     
     }
 
 
     setPrevNext(dishId : string) {
       if (dishId != null) {
         const index = this.dishIds?.indexOf(dishId);
-  
         this.prev = this.dishIds?.[(this.dishIds?.length + index! - 1) % this.dishIds?.length];
         this.next = this.dishIds?.[(this.dishIds?.length + index! + 1) % this.dishIds?.length];
       }
+      
     }
 
 
@@ -141,20 +162,24 @@ export class DishdetailComponent implements OnInit {
 
 
   onSubmit() {
-    console.log(this.author);
-    console.log(this.commentt);
-    console.log(this.rating);
-    this.dish.Comments.push( this.rating,this.commentt,this.author );
-   
-    
-   
-    
+    this.comment =this.commentForm.value;
+    this.comment.date = new Date().toISOString();
+    console.log(this.comment);
+    this.dish.comments.push(this.comment);
+    this.dishservice.putDish(this.dishcopy)
+      .subscribe(dish => {
+        this.dish = dish ; this.dishcopy= dish;
+      },
+      errmis => {
+        this.dish = null ; this.dishcopy = null
+      });
+    this.feedbackFormDirective.resetForm();
     this.commentForm.reset({
       author: '',
       rating: 0,
       comment: ''
     });
-    this.feedbackFormDirective.resetForm();
+    
   }
 
   onValueChanged(data?: any) {
